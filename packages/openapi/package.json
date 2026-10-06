@@ -1,0 +1,123 @@
+{
+  "name": "@decentdocs/openapi",
+  "version": "1.1.1",
+  "description": "Generate MDX docs for your OpenAPI spec",
+  "keywords": [
+    "Docs",
+    "decent-docs"
+  ],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/openapi"
+  },
+  "files": [
+    "css",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./css/**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "import": "./dist/index.js"
+    },
+    "./i18n": "./dist/i18n.js",
+    "./operation": "./dist/operation.js",
+    "./playground": "./dist/playground/index.js",
+    "./requests": "./dist/requests/index.js",
+    "./requests/generators": "./dist/requests/generators/index.js",
+    "./requests/generators/all": "./dist/requests/generators/all.js",
+    "./requests/generators/csharp": "./dist/requests/generators/csharp.js",
+    "./requests/generators/curl": "./dist/requests/generators/curl.js",
+    "./requests/generators/go": "./dist/requests/generators/go.js",
+    "./requests/generators/java": "./dist/requests/generators/java.js",
+    "./requests/generators/javascript": "./dist/requests/generators/javascript.js",
+    "./requests/generators/python": "./dist/requests/generators/python.js",
+    "./requests/generators/rust": "./dist/requests/generators/rust.js",
+    "./server": "./dist/server/index.js",
+    "./ui": "./dist/ui/index.js",
+    "./ui/base": "./dist/ui/base.js",
+    "./ui/playground/client": "./dist/ui/playground/client.js",
+    "./ui/scalar": "./dist/ui/scalar/index.js",
+    "./package.json": "./package.json",
+    "./css/*": "./css/*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch --clean false",
+    "lint": "oxlint .",
+    "types:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@decentdocs/json-schema": "workspace:*",
+    "@decentdocs/stf": "workspace:*",
+    "@fuma-translate/react": "^1.0.2",
+    "@fumari/json-schema-ts": "^1.0.2",
+    "@scalar/json-magic": "^0.15.4",
+    "@scalar/openapi-upgrader": "^0.4.1",
+    "chokidar": "^5.0.0",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.4.0",
+    "github-slugger": "^2.0.0",
+    "hast-util-to-jsx-runtime": "^2.3.6",
+    "lucide-react": "^1.50.0",
+    "remark": "^15.0.1",
+    "remark-rehype": "^11.1.2",
+    "shiki": "^4.5.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@decentdocs/core": "workspace:*",
+    "@decentdocs/shared-api": "workspace:*",
+    "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
+    "@scalar/api-client-react": "^2.0.54",
+    "@tailwindcss/oxide": "^4.3.3",
+    "@types/node": "26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "fast-content-type-parse": "^4.0.0",
+    "fuma-cli": "^0.3.1",
+    "json-schema-typed": "^8.0.2",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0",
+    "xml-js": "^1.6.11"
+  },
+  "peerDependencies": {
+    "@decentdocs/core": "workspace:^",
+    "@decentdocs/ui": "workspace:^",
+    "@scalar/api-client-react": "^2.0.20",
+    "@types/react": "*",
+    "json-schema-typed": "*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "json-schema-typed": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    },
+    "@scalar/api-client-react": {
+      "optional": true
+    }
+  },
+  "inlinedDependencies": {
+    "fast-content-type-parse": "4.0.0",
+    "xml-js": "1.6.11"
+  }
+}

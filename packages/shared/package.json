@@ -1,0 +1,16 @@
+{
+  "name": "@decentdocs/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "fuma-cli": "^0.3.1"
+  },
+  "devDependencies": {
+    "@decentdocs/cli": "workspace:*",
+    "@types/node": "^26.6.4",
+    "fuma-translate": "^1.0.2",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0"
+  }
+}

@@ -1,0 +1,248 @@
+'use client';
+import { type ComponentProps, type FC, type ReactNode, useState } from 'react';
+import { Dialog } from '@base-ui/react/dialog';
+import { Play, X } from 'lucide-react';
+import { useOnChange } from '@decentdocs/core/utils/use-on-change';
+import { useOpenAPI } from '@/utils/create-page';
+import { useExampleRequests, useOperation } from '@/operation';
+import {
+  DefaultResultDisplay,
+  iconButtonClassName,
+  type ResultDisplayProps,
+} from './components/result-display';
+import { EndpointBar } from '@/ui/components/endpoint';
+import { buttonVariants } from '@decentdocs/ui/components/ui/button';
+import { cn } from '@/utils/cn';
+import { SchemaProvider } from '@decentdocs/shared-api/components/playground/schema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@decentdocs/shared-api/components/select';
+import { type FieldKey, StfProvider, useFieldValue } from '@decentdocs/stf';
+import type { ParameterObject } from '@/types';
+import { useTranslations } from '@fuma-translate/react';
+import {
+  type Playground,
+  type PlaygroundOptions,
+  type RequestBodyInfo,
+  usePlayground,
+} from '@/playground/use-playground';
+import { UrlBar } from './components/url-bar';
+import { RequestPanel } from './components/request-panel';
+import { ResponsePanel } from './components/response-panel';
+import { Segmented, SegmentedList } from './components/segmented';
+
+export interface PlaygroundClientProps extends ComponentProps<'div'>, PlaygroundClientOptions {
+  /** @deprecated it defaults to `true` for requests */
+  writeOnly?: boolean;
+  /** @deprecated it defaults to `false` for requests */
+  readOnly?: boolean;
+}
+
+/** @deprecated use `usePlayground().stf` for the form */
+export interface FormValues extends Record<string, unknown> {
+  path: Record<string, unknown>;
+  query: Record<string, unknown>;
+  header: Record<string, unknown>;
+  cookie: Record<string, unknown>;
+  body: unknown;
+}
+
+export type { ResultDisplayProps };
+export { DefaultResultDisplay };
+
+export interface PlaygroundClientOptions extends PlaygroundOptions {
+  components?: {
+    ResultDisplay?: FC<ResultDisplayProps>;
+  };
+
+  /**
+   * render the parameter inputs of API endpoint.
+   *
+   * for updating values, use:
+   * - the `Custom.useController()` from `@decentdocs/openapi/ui/playground/client`.
+   *
+   * Recommended types packages: `json-schema-typed`.
+   */
+  renderParameterField?: (fieldName: FieldKey, param: ParameterObject) => ReactNode;
+
+  /**
+   * render the input for API endpoint body.
+   *
+   * @see renderParameterField for customization tips
+   */
+  renderBodyField?: (fieldName: 'body', info: RequestBodyInfo) => ReactNode;
+}
+
+export default function PlaygroundClient({
+  writeOnly = true,
+  readOnly = false,
+  transformAuthInputs,
+  fetchOptions,
+  components,
+  renderParameterField,
+  renderBodyField,
+  ...rest
+}: PlaygroundClientProps) {
+  const t = useTranslations({ note: 'playground' });
+  const { doc } = useOpenAPI();
+  const { path, method, operation } = useOperation();
+  const playground = usePlayground({ transformAuthInputs, fetchOptions });
+  const [open, setOpen] = useState(false);
+
+  useOnChange(playground.auth.flowReturned, (returned) => {
+    if (returned) setOpen(true);
+  });
+
+  return (
+    <StfProvider value={playground.stf}>
+      <SchemaProvider docRoot={doc.dereferenced as never} writeOnly={writeOnly} readOnly={readOnly}>
+        <Dialog.Root open={open} onOpenChange={setOpen}>
+          <EndpointBar method={method} route={path} deprecated={operation.deprecated} {...rest}>
+            <Dialog.Trigger
+              className={cn(
+                buttonVariants({ variant: 'primary', size: 'sm' }),
+                'group shrink-0 gap-1.5 rounded-lg px-3 transition-[background-color,scale] active:scale-[0.97] motion-reduce:transition-none',
+              )}
+            >
+              <Play className="size-3 fill-current transition-transform duration-200 group-hover:translate-x-px motion-reduce:transition-none" />
+              {t('Try in Playground')}
+            </Dialog.Trigger>
+          </EndpointBar>
+          <Dialog.Portal>
+            <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+            <Dialog.Popup className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-fd-background text-fd-foreground outline-none transition-[opacity,scale] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-[0.98] data-starting-style:opacity-0 motion-reduce:transition-opacity sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-[min(52rem,calc(100dvh-3rem))] sm:w-[min(80rem,calc(100vw-3rem))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border sm:shadow-2xl">
+              <PlaygroundDialog
+                playground={playground}
+                renderParameterField={renderParameterField}
+                renderBodyField={renderBodyField}
+                ResultDisplay={components?.ResultDisplay}
+              />
+            </Dialog.Popup>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </SchemaProvider>
+    </StfProvider>
+  );
+}
+
+function PlaygroundDialog({
+  playground,
+  renderParameterField,
+  renderBodyField,
+  ResultDisplay,
+}: Pick<PlaygroundClientOptions, 'renderParameterField' | 'renderBodyField'> & {
+  playground: Playground;
+  ResultDisplay?: FC<ResultDisplayProps>;
+}) {
+  const t = useTranslations({ note: 'playground' });
+  const { title, method, path, operation, parameters } = useOperation();
+  const { response, isSending, send, clearResponse } = playground;
+  const [view, setView] = useState('request');
+
+  return (
+    <form
+      noValidate
+      className="flex min-h-0 flex-1 flex-col"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void send();
+        setView('response');
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== 'Enter' || !(e.metaKey || e.ctrlKey)) return;
+        e.preventDefault();
+        e.currentTarget.requestSubmit();
+      }}
+    >
+      <div className="flex h-12 shrink-0 items-center gap-2 ps-4 pe-2 sm:ps-5">
+        <Dialog.Title className="truncate text-sm font-medium">{title}</Dialog.Title>
+        {operation.deprecated && (
+          <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            {t('Deprecated')}
+          </span>
+        )}
+        <div className="ms-auto flex items-center gap-1">
+          <ExampleSelect />
+          <Dialog.Close aria-label={t('Close')} className={iconButtonClassName}>
+            <X />
+          </Dialog.Close>
+        </div>
+      </div>
+      <div className="shrink-0 px-3 pb-3 sm:px-4">
+        <UrlBar
+          method={method}
+          route={path}
+          parameters={parameters.find((group) => group.in === 'path')?.items ?? []}
+          deprecated={operation.deprecated}
+          loading={isSending}
+        />
+      </div>
+      <Segmented value={view} onValueChange={setView} className="shrink-0 px-3 pb-3 md:hidden">
+        <SegmentedList
+          className="*:flex-1 *:justify-center"
+          items={[
+            { value: 'request', label: t('Request') },
+            { value: 'response', label: t('Response') },
+          ]}
+        />
+      </Segmented>
+      <div className="mx-3 mb-3 grid min-h-0 flex-1 overflow-hidden rounded-xl border bg-fd-card sm:mx-4 sm:mb-4 md:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
+        <RequestPanel
+          playground={playground}
+          renderParameterField={renderParameterField}
+          renderBodyField={renderBodyField}
+          className={cn(view !== 'request' && 'max-md:hidden')}
+        />
+        <ResponsePanel
+          response={response}
+          loading={isSending}
+          onReset={clearResponse}
+          ResultDisplay={ResultDisplay}
+          className={cn('md:border-s', view !== 'response' && 'max-md:hidden')}
+        />
+      </div>
+    </form>
+  );
+}
+
+function ExampleSelect() {
+  const { items, selected, select } = useExampleRequests();
+  const t = useTranslations({ note: 'playground' });
+  if (items.length <= 1) return null;
+  const options = items.map((item) => ({ value: item.id, label: item.name }));
+
+  return (
+    <Select items={options} value={selected ?? null} onValueChange={(v) => v !== null && select(v)}>
+      <SelectTrigger className="h-8 w-auto max-w-64 gap-1.5 border-0 bg-transparent px-2 text-xs hover:bg-fd-accent focus:ring-0 focus-visible:ring-2">
+        <span className="text-fd-muted-foreground">{t('Example')}</span>
+        <SelectValue className="truncate font-medium" />
+      </SelectTrigger>
+      <SelectContent align="end">
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+export const Custom = {
+  useController(
+    fieldName: FieldKey,
+    options?: {
+      defaultValue?: unknown;
+    },
+  ) {
+    const [value, setValue] = useFieldValue(fieldName, options);
+    return {
+      value,
+      setValue,
+    };
+  },
+};

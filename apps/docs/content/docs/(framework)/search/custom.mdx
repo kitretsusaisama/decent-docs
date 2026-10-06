@@ -1,0 +1,18 @@
+---
+title: Custom Search
+description: For other search solutions.
+---
+
+## Overview
+
+Decent Docs is very flexible, you can integrate custom search with Decent Docs easily.
+
+### Search Indexes
+
+With Decent Docs MDX, the generated search indexes are exposed during runtime.
+
+To expose search indexes statically, export the records with a pre-rendered `static.json` route, and process them with a script after each build:
+
+<feature>search/custom</feature>
+
+The `structured` field contains the headings and paragraphs of each page, use it to generate accurate search indexes.

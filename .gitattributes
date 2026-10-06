@@ -1,0 +1,3 @@
+# Normalize line endings: LF in the working tree on every platform.
+# File snapshots compare contents verbatim; CRLF checkouts fail them.
+* text=auto eol=lf

@@ -1,0 +1,70 @@
+{
+  "name": "@decentdocs/json-schema",
+  "version": "1.1.1",
+  "description": "JSON Schema toolkit: dereference, merge, sample and stringify schemas",
+  "keywords": [
+    "JSON Schema",
+    "decent-docs"
+  ],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/json-schema"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./bundle": "./dist/bundle.js",
+    "./react": "./dist/react.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch --clean false",
+    "lint": "oxlint .",
+    "types:check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fuma-translate/react": "^1.0.2",
+    "@scalar/json-magic": "^0.15.4"
+  },
+  "devDependencies": {
+    "@fastify/deepmerge": "^3.2.1",
+    "@types/node": "26.6.4",
+    "@types/react": "^19.3.0",
+    "json-schema-typed": "^8.0.2",
+    "react": "^19.3.0",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0",
+    "vitest": "^5.0.3"
+  },
+  "peerDependencies": {
+    "json-schema-typed": "*",
+    "react": "^19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "json-schema-typed": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "inlinedDependencies": {
+    "@fastify/deepmerge": "3.2.1"
+  }
+}

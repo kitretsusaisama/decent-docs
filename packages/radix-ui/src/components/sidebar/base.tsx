@@ -1,0 +1,434 @@
+'use client';
+import { ChevronDown, ExternalLink } from 'lucide-react';
+import {
+  type ComponentProps,
+  createContext,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import Link, { type LinkProps } from '@decentdocs/core/link';
+import { useOnChange } from '@decentdocs/core/utils/use-on-change';
+import { flushSync } from 'react-dom';
+import { cn } from '@/utils/cn';
+import {
+  Collapsible,
+  CollapsibleContent,
+  type CollapsibleContentProps,
+  CollapsibleTrigger,
+  type CollapsibleTriggerProps,
+} from '@/components/ui/collapsible';
+import { useMediaQuery } from '@decentdocs/core/utils/use-media-query';
+import { Presence } from '@radix-ui/react-presence';
+import scrollIntoView from 'scroll-into-view-if-needed';
+import { usePathname } from '@decentdocs/core/framework';
+import * as ScrollArea from '@radix-ui/react-scroll-area';
+import { useTranslations } from '@fuma-translate/react';
+
+interface SidebarContext {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+
+  /**
+   * When set to false, don't close the sidebar when navigate to another page
+   */
+  closeOnRedirect: RefObject<boolean>;
+  defaultOpenLevel: number;
+  prefetch?: boolean;
+  mode: Mode;
+}
+
+export interface SidebarProviderProps {
+  /**
+   * Open folders by default if their level is lower or equal to a specific level
+   * (Starting from 1)
+   *
+   * @defaultValue 0
+   */
+  defaultOpenLevel?: number;
+
+  /**
+   * Prefetch links, default behaviour depends on your React.js framework.
+   */
+  prefetch?: boolean;
+
+  children?: ReactNode;
+}
+
+type Mode = 'drawer' | 'full';
+
+const SidebarContext = createContext<SidebarContext | null>(null);
+
+const FolderContext = createContext<{
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  depth: number;
+  collapsible: boolean;
+} | null>(null);
+
+export function SidebarProvider({
+  defaultOpenLevel = 0,
+  prefetch,
+  children,
+}: SidebarProviderProps) {
+  const closeOnRedirect = useRef(true);
+  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+  const mode: Mode = useMediaQuery('(width < 768px)') ? 'drawer' : 'full';
+
+  useOnChange(pathname, () => {
+    if (closeOnRedirect.current) {
+      setOpen(false);
+    }
+    closeOnRedirect.current = true;
+  });
+
+  return (
+    <SidebarContext
+      value={useMemo(
+        () => ({
+          open,
+          setOpen,
+          collapsed,
+          setCollapsed,
+          closeOnRedirect,
+          defaultOpenLevel,
+          prefetch,
+          mode,
+        }),
+        [open, collapsed, defaultOpenLevel, prefetch, mode],
+      )}
+    >
+      {children}
+    </SidebarContext>
+  );
+}
+
+export function useSidebar(): SidebarContext {
+  const ctx = use(SidebarContext);
+  if (!ctx)
+    throw new Error(
+      'Missing SidebarContext, make sure you have wrapped the component in <DocsLayout /> and the context is available.',
+    );
+
+  return ctx;
+}
+
+export function useFolder() {
+  return use(FolderContext);
+}
+
+export function useFolderDepth() {
+  return use(FolderContext)?.depth ?? 0;
+}
+
+export function SidebarContent({
+  mode: allowedMode = 'full',
+  children,
+}: {
+  mode?: Mode | true;
+  children: (state: {
+    ref: RefObject<HTMLElement | null>;
+    collapsed: boolean;
+    hovered: boolean;
+    onPointerEnter: (event: PointerEvent) => void;
+    onPointerLeave: (event: PointerEvent) => void;
+  }) => ReactNode;
+}) {
+  const { collapsed, mode } = useSidebar();
+  const [hover, setHover] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+  const timerRef = useRef(0);
+
+  useOnChange(collapsed, () => {
+    if (collapsed) setHover(false);
+  });
+
+  if (allowedMode !== true && allowedMode !== mode) return;
+
+  function shouldIgnoreHover(e: PointerEvent): boolean {
+    const element = ref.current;
+    if (!element) return true;
+
+    return !collapsed || e.pointerType === 'touch' || element.getAnimations().length > 0;
+  }
+
+  return children({
+    ref,
+    collapsed,
+    hovered: hover,
+    onPointerEnter(e) {
+      if (shouldIgnoreHover(e)) return;
+      window.clearTimeout(timerRef.current);
+      setHover(true);
+    },
+    onPointerLeave(e) {
+      if (shouldIgnoreHover(e)) return;
+      window.clearTimeout(timerRef.current);
+
+      timerRef.current = window.setTimeout(
+        () => setHover(false),
+        // if mouse is leaving the viewport, add a close delay
+        Math.min(e.clientX, document.body.clientWidth - e.clientX) > 100 ? 0 : 500,
+      );
+    },
+  });
+}
+
+export function SidebarViewport({
+  area,
+  viewport,
+  children,
+}: {
+  area?: ComponentProps<typeof ScrollArea.Root>;
+  viewport?: ComponentProps<typeof ScrollArea.Viewport>;
+  children: ReactNode;
+}) {
+  return (
+    <ScrollArea.Root
+      type="scroll"
+      {...area}
+      className={cn('overflow-hidden min-h-0 flex-1', area?.className)}
+    >
+      <ScrollArea.Viewport
+        {...viewport}
+        className={cn(
+          'size-full rounded-[inherit] *:flex! *:flex-col! *:gap-0.5! p-4 overscroll-contain mask-[linear-gradient(to_bottom,transparent,white_12px,white_calc(100%-12px),transparent)]',
+          viewport?.className,
+        )}
+      >
+        {children}
+      </ScrollArea.Viewport>
+      <ScrollArea.Corner />
+      <ScrollArea.Scrollbar className="flex h-full w-1.5 select-none data-[state=hidden]:animate-fd-fade-out">
+        <ScrollArea.ScrollAreaThumb className="relative flex-1 rounded-full bg-fd-border" />
+      </ScrollArea.Scrollbar>
+    </ScrollArea.Root>
+  );
+}
+
+export function SidebarDrawerOverlay(props: ComponentProps<'div'>) {
+  const { open, setOpen, mode } = useSidebar();
+
+  if (mode !== 'drawer') return;
+  return (
+    <Presence present={open}>
+      <div data-state={open ? 'open' : 'closed'} onClick={() => setOpen(false)} {...props} />
+    </Presence>
+  );
+}
+
+export function SidebarDrawerContent({ className, children, ...props }: ComponentProps<'aside'>) {
+  const { open, mode } = useSidebar();
+  const state = open ? 'open' : 'closed';
+
+  if (mode !== 'drawer') return;
+  return (
+    <Presence present={open}>
+      {({ present }) => (
+        <aside
+          id="nd-sidebar-mobile"
+          data-state={state}
+          className={cn(!present && 'invisible', className)}
+          {...props}
+        >
+          {children}
+        </aside>
+      )}
+    </Presence>
+  );
+}
+
+export function SidebarSeparator(props: ComponentProps<'p'>) {
+  return <p {...props} />;
+}
+
+export function SidebarItem({
+  icon,
+  active = false,
+  children,
+  ...props
+}: LinkProps & {
+  active?: boolean;
+  icon?: ReactNode;
+}) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const { prefetch } = useSidebar();
+
+  useAutoScroll(active, ref);
+
+  return (
+    <Link ref={ref} data-active={active} prefetch={prefetch} {...props}>
+      {icon ?? (props.external ? <ExternalLink /> : null)}
+      {children}
+    </Link>
+  );
+}
+
+export function SidebarFolder({
+  defaultOpen: defaultOpenProp,
+  collapsible = true,
+  active = false,
+  children,
+  ...props
+}: ComponentProps<'div'> & {
+  active?: boolean;
+  defaultOpen?: boolean;
+  collapsible?: boolean;
+}) {
+  const { defaultOpenLevel } = useSidebar();
+  const depth = useFolderDepth() + 1;
+  const defaultOpen =
+    collapsible === false || active || (defaultOpenProp ?? defaultOpenLevel >= depth);
+  const [open, setOpen] = useState(defaultOpen);
+
+  useOnChange(defaultOpen, (v) => {
+    if (v) setOpen(v);
+  });
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} disabled={!collapsible} {...props}>
+      <FolderContext
+        value={useMemo(() => ({ open, setOpen, depth, collapsible }), [collapsible, depth, open])}
+      >
+        {children}
+      </FolderContext>
+    </Collapsible>
+  );
+}
+
+export function SidebarFolderTrigger({ children, ...props }: CollapsibleTriggerProps) {
+  const { open, collapsible } = use(FolderContext)!;
+
+  if (collapsible) {
+    return (
+      <CollapsibleTrigger {...props}>
+        {children}
+        <ChevronDown
+          data-icon
+          className={cn('ms-auto transition-transform', !open && '-rotate-90 rtl:rotate-90')}
+        />
+      </CollapsibleTrigger>
+    );
+  }
+
+  return <div {...(props as ComponentProps<'div'>)}>{children}</div>;
+}
+
+export function SidebarFolderLink({
+  children,
+  active = false,
+  ...props
+}: LinkProps & {
+  active?: boolean;
+}) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const { open, setOpen, collapsible } = use(FolderContext)!;
+  const { prefetch } = useSidebar();
+
+  useAutoScroll(active, ref);
+
+  return (
+    <Link
+      ref={ref}
+      data-active={active}
+      onClick={(e) => {
+        if (!collapsible) return;
+
+        if (e.target instanceof Element && e.target.matches('[data-icon], [data-icon] *')) {
+          setOpen(!open);
+          e.preventDefault();
+        } else {
+          setOpen(active ? !open : true);
+        }
+      }}
+      prefetch={prefetch}
+      {...props}
+    >
+      {children}
+      {collapsible && (
+        <ChevronDown
+          data-icon
+          className={cn('ms-auto transition-transform', !open && '-rotate-90 rtl:rotate-90')}
+        />
+      )}
+    </Link>
+  );
+}
+
+export function SidebarFolderContent(props: CollapsibleContentProps) {
+  return <CollapsibleContent {...props}>{props.children}</CollapsibleContent>;
+}
+
+export function SidebarTrigger({ children, ...props }: ComponentProps<'button'>) {
+  const { open, setOpen } = useSidebar();
+  const t = useTranslations({ note: 'sidebar' });
+
+  return (
+    <button
+      type="button"
+      aria-label={
+        open
+          ? t('Close Sidebar', { note: 'aria-label' })
+          : t('Open Sidebar', { note: 'aria-label' })
+      }
+      aria-expanded={open}
+      aria-controls="nd-sidebar-mobile"
+      onClick={() => setOpen((prev) => !prev)}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function SidebarCollapseTrigger(props: ComponentProps<'button'>) {
+  const { collapsed, setCollapsed } = useSidebar();
+  const t = useTranslations({ note: 'sidebar' });
+
+  return (
+    <button
+      type="button"
+      aria-label={t('Collapse Sidebar', { note: 'aria-label' })}
+      aria-controls="nd-sidebar"
+      aria-expanded={!collapsed}
+      data-collapsed={collapsed}
+      onClick={(e) => {
+        const button = e.currentTarget;
+        flushSync(() => setCollapsed((prev) => !prev));
+        // hand focus to the visible trigger if this one became hidden
+        if (button.matches('[inert] *'))
+          document
+            .querySelector<HTMLElement>('[aria-controls="nd-sidebar"]:not([inert] *)')
+            ?.focus();
+      }}
+      {...props}
+    >
+      {props.children}
+    </button>
+  );
+}
+
+/**
+ * scroll to the element if `active` is true
+ */
+export function useAutoScroll(active: boolean, ref: RefObject<HTMLElement | null>) {
+  const { mode } = useSidebar();
+
+  useEffect(() => {
+    if (active && ref.current) {
+      scrollIntoView(ref.current, {
+        boundary: document.getElementById(mode === 'drawer' ? 'nd-sidebar-mobile' : 'nd-sidebar'),
+        scrollMode: 'if-needed',
+      });
+    }
+  }, [active, mode, ref]);
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Decent Docs Core",
+  "description": "The headless library",
+  "icon": "Cuboid",
+  "root": true,
+  "pages": [
+    "---Guide---",
+    "index",
+    "search",
+    "---API References---",
+    "page-tree",
+    "internationalization",
+    "components",
+    "utils",
+    "mdx",
+    "---Sources---",
+    "source-api",
+    "page-conventions",
+    "contentlayer",
+    "custom-source"
+  ]
+}

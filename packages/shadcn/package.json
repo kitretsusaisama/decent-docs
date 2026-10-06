@@ -1,0 +1,72 @@
+{
+  "name": "@decentdocs/shadcn",
+  "version": "1.1.1",
+  "description": "Shadcn UI integration for Decent Docs.",
+  "keywords": [
+    "decent-docs"
+  ],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/shadcn"
+  },
+  "files": [
+    "css",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./rsc": "./dist/rsc.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch",
+    "lint": "oxlint .",
+    "types:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shikijs/transformers": "^4.5.0",
+    "zod-3": "npm:zod@^3.25.76"
+  },
+  "devDependencies": {
+    "@decentdocs/core": "workspace:*",
+    "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
+    "@types/node": "26.6.4",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "shadcn": "^4.21.1",
+    "tailwindcss": "^4.3.3",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0"
+  },
+  "peerDependencies": {
+    "@decentdocs/core": "workspace:^",
+    "@decentdocs/ui": "workspace:^",
+    "@types/react": "*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "shadcn": "^4"
+  },
+  "peerDependenciesMeta": {
+    "shadcn": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    }
+  }
+}

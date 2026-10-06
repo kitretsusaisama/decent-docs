@@ -1,0 +1,99 @@
+---
+title: Typesense Search
+description: Integrate Typesense Search with Decent Docs
+---
+
+> This is a community-maintained integration.
+
+## Setup
+
+### Install Dependencies
+
+```package-install
+typesense
+```
+
+### Start Typesense Server
+
+You can either self-host the Typesense server or use their cloud service. Follow their [getting started guide](https://typesense.org/docs/guide/install-typesense.html) to set up your server, and store its credentials in `.env.local` (`VITE_` instead of `NEXT_PUBLIC_` outside Next.js):
+
+```dotenv
+NEXT_PUBLIC_TYPESENSE_URL="server URL"
+NEXT_PUBLIC_TYPESENSE_SEARCH_KEY="search-only API key"
+TYPESENSE_API_KEY="API key with write access"
+```
+
+### Sync Dataset
+
+Export the search indexes with a pre-rendered `static.json` route, and sync them to Typesense with a script after each build:
+
+<feature>search/typesense</feature>
+
+The `build` script syncs on every build, set the same variables on your deployment platform.
+
+### Search UI
+
+To implement the search UI, you can either:
+
+- Use [Decent Docs UI search dialog](/docs/search/typesense).
+- Build your own search UI with the Typesense search client hook.
+
+  ```ts
+  import { Client } from 'typesense';
+  import { useTypesenseSearch } from '@decentdocs/core/search/client/typesense';
+
+  const client = new Client({
+    nodes: [{ url: 'YOUR_TYPESENSE_SERVER_URL' }],
+    apiKey: 'YOUR_TYPESENSE_SEARCH_ONLY_API_KEY',
+  });
+
+  const { search, setSearch, query } = useTypesenseSearch({
+    typesenseCollectionName: 'docs',
+    client,
+  });
+  ```
+
+## Options
+
+### Tag Filter
+
+To configure tag filtering, add a `tag` value to the documents in the `static.json` route:
+
+```ts
+documents.push({
+  // other fields...
+  // [!code ++]
+  tag: '<your value>',
+});
+```
+
+And update your search client:
+
+- **Decent Docs UI**: Enable [Tag Filter](/docs/search/typesense#tag-filter) on Search UI.
+- **Search Client**: You can add the tag filter like:
+
+  ```ts
+  import { useTypesenseSearch } from '@decentdocs/core/search/client/typesense';
+  const { search, setSearch, query } = useTypesenseSearch({
+    tag: '<your tag value>',
+    // ...
+  });
+  ```
+
+### Internationalization (i18n)
+
+Documents include the `locale` of their pages, pass `locale` to the search client:
+
+```ts
+import { useI18n } from '@decentdocs/ui/contexts/i18n';
+import { useTypesenseSearch } from '@decentdocs/core/search/client/typesense';
+
+const { locale } = useI18n();
+const { search, setSearch, query } = useTypesenseSearch({
+  // [!code ++]
+  locale,
+  // other fields...
+});
+```
+
+Under the hood, Typesense will create separate collections for each locale. The collection name is appended with the `_{locale}` suffix (e.g., `docs_en`, `docs_fr`).

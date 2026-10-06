@@ -1,0 +1,93 @@
+---
+title: Customize UI
+description: A complete guide on how to customize Decent Docs UI.
+---
+
+## Introduction
+
+Decent Docs UI provides pre-built components for simplicity, serving as a middleground between "installing all UI code to your codebase" and an opinionated package.
+
+While Decent Docs UI itself has many designs around flexibility & backward compatibility, if used incorrectly, the measures may take no effect.
+
+> It is also recommended to feed this guide to your AI agents, if they may edit your UI.
+
+### Pick the Right Component [step]
+
+For layout UIs, there's different built-in layout components you can try:
+
+<Cards>
+  <Card title="Docs Layout" href="/docs/ui/layouts/docs">
+    The layout of documentation
+  </Card>
+  <Card title="Notebook Layout" href="/docs/ui/layouts/notebook">
+    A compact version of Docs Layout
+  </Card>
+  <Card title="Home Layout" href="/docs/ui/layouts/home-layout">
+    Shared layout for other pages
+  </Card>
+  <Card title="Flux Layout" href="/docs/ui/layouts/flux">
+    An aggressively minimal layout for docs
+  </Card>
+  <Card title="Glass Layout" href="/docs/ui/layouts/glass">
+    A docs layout with a floating, translucent sidebar and header
+  </Card>
+  <Card title="Spacious Layout" href="/docs/ui/layouts/spacious">
+    A less compact version of Docs Layout
+  </Card>
+</Cards>
+
+### Props [step]
+
+You can first check if the options of components can suffice your needs, for example:
+
+```tsx
+<DocsLayout sidebar={{ enabled: false }}>{/* content */}</DocsLayout>
+```
+
+Or styling the container via props:
+
+```tsx
+<DocsLayout
+  containerProps={{
+    className: '...',
+  }}
+>
+  {/* content */}
+</DocsLayout>
+```
+
+Detailed documentation for each component is in the [Decent Docs UI](/docs/ui) section, you can take it as a reference.
+
+Most options support passing JSX elements to allow your own components.
+This approach should suffice most use cases, such as adding sections below table of contents or in sidebar.
+
+### CSS [step]
+
+When the styling is more complicated, some components of Decent Docs UI attaches its own `id` & `data-` attributes for selecting.
+You can target them in your CSS selectors:
+
+```css
+#nd-docs-layout #nd-subnav {
+  background-color: purple;
+}
+
+[data-toc-popover] {
+  background-color: purple;
+}
+```
+
+**Avoid invasive styles, or anything that presume a very specific DOM structure**, as it is difficult to guarantee backward compatibility, especially with newer UI features.
+
+```css title="Bad Example"
+/* avoid targeting elements like this! */
+[data-toc-popover] > div {
+  background-color: purple;
+}
+```
+
+CSS approach can be risky as only the `id` & `data-` attributes can be versioned under its own life cycles, prefer other approaches if possible.
+
+## Other Questions
+
+Unexpected breakages or questions? Check the [CLI docs](/docs/cli) first, then reach out through
+your team's channel.

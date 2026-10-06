@@ -1,0 +1,25 @@
+{
+  "title": "Framework",
+  "description": "The docs framework",
+  "icon": "Building",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "what-is-decent-docs",
+    "comparisons",
+    "manual-installation",
+    "guides",
+    "---Writing---",
+    "page-conventions",
+    "markdown",
+    "---Configurations---",
+    "navigation",
+    "deploying",
+    "internationalization",
+    "search",
+    "---Integrations---",
+    "editor",
+    "...integrations"
+  ]
+}

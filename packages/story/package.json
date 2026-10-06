@@ -1,0 +1,111 @@
+{
+  "name": "@decentdocs/story",
+  "version": "1.1.1",
+  "description": "Story integration to Decent Docs.",
+  "keywords": [],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/story"
+  },
+  "files": [
+    "css",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./css/**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "import": "./dist/index.js"
+    },
+    "./i18n": "./dist/i18n.js",
+    "./next": "./dist/next/index.js",
+    "./next/client": "./dist/next/client.js",
+    "./type-tree": {
+      "types": "./dist/type-tree/index.d.ts",
+      "browser": "./dist/type-tree/index.browser.js",
+      "import": "./dist/type-tree/index.js"
+    },
+    "./vite": "./dist/vite/index.js",
+    "./vite/client": "./dist/vite/client.js",
+    "./webpack/story": "./dist/webpack/story.js",
+    "./package.json": "./package.json",
+    "./css/*": "./css/*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch",
+    "lint": "oxlint .",
+    "types:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@decentdocs/stf": "workspace:*",
+    "@fuma-translate/react": "^1.0.2",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.4.0",
+    "lucide-react": "^1.50.0",
+    "typescript": "~7.0.2"
+  },
+  "devDependencies": {
+    "@decentdocs/core": "workspace:*",
+    "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
+    "@fastify/deepmerge": "^3.2.1",
+    "@types/node": "26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/ungap__structured-clone": "^1.2.0",
+    "@ungap/structured-clone": "^1.4.0",
+    "fuma-cli": "^0.3.1",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-error-boundary": "^6.1.5",
+    "tailwindcss": "^4.3.3",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0",
+    "vite": "^8.3.2",
+    "webpack": "^5.111.1"
+  },
+  "peerDependencies": {
+    "@decentdocs/core": "workspace:^",
+    "@decentdocs/ui": "workspace:^",
+    "@types/react": "*",
+    "next": "^15.3.0 || ^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vite": "^8",
+    "webpack": "^5"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    }
+  },
+  "inlinedDependencies": {
+    "@fastify/deepmerge": "3.2.1",
+    "@ungap/structured-clone": "1.4.0",
+    "react-error-boundary": "6.1.6"
+  }
+}

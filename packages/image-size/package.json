@@ -1,0 +1,47 @@
+{
+  "name": "@decentdocs/image-size",
+  "version": "1.1.1",
+  "description": "Read image dimensions without downloading the whole image. Zero dependencies.",
+  "keywords": [
+    "dimensions",
+    "image",
+    "probe",
+    "size"
+  ],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/image-size"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch",
+    "lint": "oxlint .",
+    "test": "vitest run",
+    "types:check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0",
+    "vitest": "^5.0.3"
+  }
+}

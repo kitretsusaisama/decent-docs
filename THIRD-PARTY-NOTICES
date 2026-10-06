@@ -1,0 +1,37 @@
+Decent Docs - THIRD-PARTY NOTICES
+===============================
+
+This repository contains material derived from third-party projects. Their
+licenses are retained below and in the referenced files; original copyright
+notices remain in the source files where required.
+
+1. Vendored third-party code
+----------------------------
+- packages/core/src/mdx-plugins/rehype-code/ - derived from Shiki and related
+  tooling. MIT, Copyright (c) 2021 Pine Wu and (c) 2023 Anthony Fu. See the
+  LICENSE file in that directory.
+- packages/tailwind/src/typography/ - derived from the Tailwind CSS typography
+  plugin. MIT, Copyright (c) Tailwind Labs, Inc. See the LICENSE file in that
+  directory.
+- packages/vite/vitefu/ - derived from vitefu. MIT, Copyright (c) Bjorn and
+  Dominik. See LICENSE.vitefu in that directory.
+- packages/image-size/ - MIT, Copyright (c) 2026 Fuma Nama. See the LICENSE
+  file in that directory.
+- packages/core/src/search/typesense.ts & packages/core/src/search/client/typesense.ts - derived
+  from typesense-fumadocs-adapter (https://github.com/typesense/typesense-fumadocs-adapter).
+  Apache-2.0, Copyright Typesense. See LICENSE in the original repository.
+
+2. External dependencies
+------------------------
+Workspace dependencies installed from npm (for example fuma-cli, fuma-translate,
+@fuma-translate/react, @fumari/json-schema-ts, fuma-content) remain third-party
+works under their own licenses; this repository does not redistribute them.
+
+3. Patched dependencies
+-----------------------
+Local modifications under patches/ are applied at install time by pnpm; the
+underlying packages remain under their original licenses.
+
+4. License
+----------
+MIT. See [LICENSE](./LICENSE).

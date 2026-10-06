@@ -1,0 +1,154 @@
+---
+title: Trieve Search
+description: Integrate Trieve Search with Decent Docs
+---
+
+> This is a community maintained integration.
+
+## Introduction
+
+The Trieve Integration automatically configures Trieve Search for site search.
+
+By default, it creates a chunk for **each paragraph** in your document, it is
+officially recommended by Trieve.
+
+## Setup
+
+### Install Dependencies
+
+```package-install
+trieve-ts-sdk trieve-fumadocs-adapter
+```
+
+### Sign up on Trieve
+
+Sign up and create a dataset. Then obtain 2 API keys where one has only read access and the other has admin access to create and delete chunks.
+Store the dataset ID and admin key in `.env.local` for syncing:
+
+```dotenv
+TRIEVE_DATASET_ID="dataset ID"
+TRIEVE_ADMIN_API_KEY="admin API key"
+```
+
+<Callout title="Notice">
+  One API Key should have only read access for the public facing search and the other should have
+  admin access to create and delete chunks.
+</Callout>
+
+### Sync Dataset
+
+Trieve takes the records of the [Algolia integration](/docs/headless/search/algolia). Export them with a pre-rendered `static.json` route, and sync them to Trieve with a script after each build:
+
+<feature>search/trieve</feature>
+
+The `build` script syncs on every build, set the same variables on your deployment platform.
+
+### Search UI
+
+You can use their `SearchDialog` component:
+
+```tsx title="components/search.tsx"
+'use client';
+import type { SharedProps } from '@decentdocs/ui/components/dialog/search';
+import SearchDialog from 'trieve-fumadocs-adapter/components/dialog/search';
+import { TrieveSDK } from 'trieve-ts-sdk';
+
+const trieveClient = new TrieveSDK({
+  apiKey: 'readOnlyApiKey',
+  datasetId: 'datasetId',
+});
+
+export default function CustomSearchDialog(props: SharedProps) {
+  return <SearchDialog trieveClient={trieveClient} {...props} />;
+}
+```
+
+1. Replace `apiKey` and `datasetId` with your desired values.
+
+2. Replace the default search dialog with your new one.
+
+### Search Client
+
+Add the `useTrieveSearch` hook:
+
+```ts
+import { TrieveSDK } from 'trieve-ts-sdk';
+import { useTrieveSearch } from 'trieve-fumadocs-adapter/search/trieve';
+
+const client = new TrieveSDK({
+  apiKey: 'readOnlyApiKey',
+  datasetId: 'datasetId',
+});
+
+const { search, setSearch, query } = useTrieveSearch(client);
+```
+
+## Options
+
+### Tag Filter
+
+To configure tag filtering, add a `tag` value to indexes.
+
+```js
+import { sync } from 'trieve-fumadocs-adapter/search/sync';
+import { TrieveSDK } from 'trieve-ts-sdk';
+
+const client = new TrieveSDK({
+  apiKey: 'adminApiKey',
+  datasetId: 'datasetId',
+});
+
+const documents = records.map((index) => ({
+  ...index,
+  tag: 'value', // [!code highlight]
+}));
+
+sync(client, documents);
+```
+
+#### Search UI
+
+Enable Tag Filter.
+
+```tsx title="components/search.tsx"
+import SearchDialog from 'trieve-fumadocs-adapter/components/dialog/search';
+
+<SearchDialog
+  defaultTag="value"
+  tags={[
+    {
+      name: 'Tag Name',
+      value: 'value',
+    },
+  ]}
+/>;
+```
+
+#### Search Client
+
+The `tag_set` field is an attribute for filtering. To filter indexes by tag, use the filter on Trieve search clients.
+
+```json
+{
+  "must": [
+    {
+      "field": "tag_set",
+      "match": ["value"]
+    }
+  ]
+}
+```
+
+Or with `useTrieveSearch` hook:
+
+```ts
+import { TrieveSDK } from 'trieve-ts-sdk';
+import { useTrieveSearch } from 'trieve-fumadocs-adapter/search/trieve';
+
+const client = new TrieveSDK({
+  apiKey: 'readOnlyApiKey',
+  datasetId: 'datasetId',
+});
+
+const { search, setSearch, query } = useTrieveSearch(client, undefined, '<your tag value>');
+```

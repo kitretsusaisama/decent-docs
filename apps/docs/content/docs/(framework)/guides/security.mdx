@@ -1,0 +1,122 @@
+---
+title: Security
+description: Trust model, hardened defaults, and the production checklist.
+---
+
+## Trust model
+
+Decent Docs draws the line in three places.
+
+### Content is trusted
+
+MDX compiles to executable JavaScript (JSX) at build time — rendering a page
+runs whatever the file says. Treat write access to your content as write
+access to your build: never compile untrusted submissions without isolating
+the build (sandboxed container, no secrets in the environment).
+
+### The browser only sees public configuration
+
+Environment variables reach the browser only through the `NEXT_PUBLIC_`
+(Next.js) or `VITE_` (Vite) prefixes. Server-side secrets — API keys, write
+tokens, database URLs — must never be renamed into those prefixes.
+
+The search feature follows the same line: public search keys go to the
+client, while write/admin keys live in the server-only `privateEnv` and are
+never serialized into shipped bundles.
+
+### Local development stays local
+
+The content dev server (file watcher + WebSocket) binds `127.0.0.1` by
+default. It is not meant to be exposed — put a reverse proxy with
+authentication in front if you need to share it.
+
+## Hardened defaults
+
+### Image probing refuses private networks
+
+Remote image probing (`@decentdocs/image-size`, used to size external
+images) only fetches `http(s)` URLs and refuses loopback, private, and
+link-local targets — including redirects that bounce to them:
+
+- loopback: `localhost`, `127.0.0.0/8`, `::1`
+- private: `10.x`, `172.16–31.x`, `192.168.x`, `fc00::/7`
+- link-local & metadata: `169.254.169.254`, `100.64–127.x`, `fe80::/10`
+
+Every request also carries a timeout (30 s by default) and stops reading
+after the image header, so a slow or endless response can't stall a build.
+If you _do_ trust a host — an intranet image server — opt out explicitly:
+
+```ts
+// remark-image options
+external: { timeout: 5000, allowPrivate: true },
+```
+
+### API playground cookies are tightly scoped
+
+The OpenAPI playground's cookies (`SameSite=Lax`, `Secure` on HTTPS) are
+short-lived: 10 minutes for the OAuth return path, 30 seconds for request
+cookies. Nothing survives the session.
+
+### Ship a conservative header set
+
+The example apps and the scaffolded Next template set these in
+`next.config`:
+
+```ts
+async headers() {
+  return [
+    {
+      source: '/:path*',
+      headers: [
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        {
+          key: 'Permissions-Policy',
+          value: 'camera=(), microphone=(), geolocation=()',
+        },
+      ],
+    },
+  ];
+},
+```
+
+Also set `poweredByHeader: false` to stop advertising the framework.
+
+<Callout type="warn" title="Static exports">
+  `headers()` does not run when `output: 'export'` is set — for a static export the same headers
+  belong to your host or CDN (Vercel `headers` in `vercel.json`, Netlify `_headers`, nginx
+  `add_header`, Cloudflare Transform Rules).
+</Callout>
+
+### Rate limit public API routes
+
+Search and OG-image routes are plain framework API routes. If you expose
+them to the internet, rate-limit at the platform edge (Vercel middleware or
+IP firewall, nginx `limit_req`, Cloudflare) instead of in the app — a
+limiter baked into the toolkit could not be configured correctly for every
+host.
+
+## Repository hardening
+
+The Decent Docs repository itself ships the supply chain controls you
+should copy for your own docs site:
+
+- **npm provenance** — CI publishes with OIDC, from a protected `main`.
+- **SHA-pinned actions** — every `uses:` is pinned to a commit hash;
+  Dependabot bumps them weekly alongside npm dependencies.
+- **CodeQL + dependency review** — analysis on every push/PR; PRs that add
+  high-severity dependencies fail.
+- **pnpm policies** — `minimumReleaseAge` delays brand-new publishes, and
+  the `allowBuilds` allowlist blocks unexpected install scripts.
+
+See [SECURITY.md](https://github.com/kitretsusaisama/decent-docs/blob/main/SECURITY.md)
+for the trust model in full and the supported-versions policy.
+
+## Reporting a vulnerability
+
+Report vulnerabilities through
+[private vulnerability reporting](https://github.com/kitretsusaisama/decent-docs/security/advisories/new) —
+never in a public issue. Expect an acknowledgement within 72 hours; see
+[SECURITY.md](https://github.com/kitretsusaisama/decent-docs/blob/main/SECURITY.md)
+for details.

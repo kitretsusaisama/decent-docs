@@ -1,0 +1,122 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "alt": "Test",
+          "position": {
+            "end": {
+              "column": 20,
+              "line": 1,
+              "offset": 19,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "title": null,
+          "type": "image",
+          "url": "./test.png",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 20,
+          "line": 1,
+          "offset": 19,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "paragraph",
+    },
+    {
+      "children": [
+        {
+          "alt": "External",
+          "position": {
+            "end": {
+              "column": 71,
+              "line": 3,
+              "offset": 91,
+            },
+            "start": {
+              "column": 1,
+              "line": 3,
+              "offset": 21,
+            },
+          },
+          "title": null,
+          "type": "image",
+          "url": "https://github.com/kitretsusaisama/decent-docs/banner.png",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 71,
+          "line": 3,
+          "offset": 91,
+        },
+        "start": {
+          "column": 1,
+          "line": 3,
+          "offset": 21,
+        },
+      },
+      "type": "paragraph",
+    },
+    {
+      "children": [
+        {
+          "alt": "Inline",
+          "position": {
+            "end": {
+              "column": 30,
+              "line": 5,
+              "offset": 122,
+            },
+            "start": {
+              "column": 1,
+              "line": 5,
+              "offset": 93,
+            },
+          },
+          "title": null,
+          "type": "image",
+          "url": "./remark-image.svg",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 30,
+          "line": 5,
+          "offset": 122,
+        },
+        "start": {
+          "column": 1,
+          "line": 5,
+          "offset": 93,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 6,
+      "offset": 123,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}

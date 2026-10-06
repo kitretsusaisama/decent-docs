@@ -1,0 +1,89 @@
+---
+title: Orama Cloud
+description: Integrate with Orama Cloud
+---
+
+To begin, create an account on Orama Cloud.
+
+## REST API
+
+REST API integration requires your docs to upload the indexes.
+
+1. Create a new project with **REST API** data source on Orama Cloud dashboard.
+
+   Store your credentials in `.env.local`, for example (`VITE_` instead of `NEXT_PUBLIC_` outside Next.js):
+
+   ```dotenv
+   NEXT_PUBLIC_ORAMA_DATASOURCE_ID="Rest API data source ID"
+   NEXT_PUBLIC_ORAMA_PROJECT_ID="project ID"
+   NEXT_PUBLIC_ORAMA_API_KEY="public API key"
+
+   ORAMA_PRIVATE_API_KEY="private API key"
+   ```
+
+2. Pre-render a `static.json` route to export the search indexes on build, and sync them to Orama Cloud with a script after each build:
+
+   <feature>search/orama-cloud</feature>
+
+   The `build` script syncs on every build, set the same variables on your deployment platform.
+
+### Search Client
+
+To search documents on the client side, consider:
+
+- Using [Decent Docs UI search dialog](/docs/search/orama-cloud).
+- Custom search UI using the built-in hook of Decent Docs:
+
+  ```ts
+  import { useDocsSearch } from '@decentdocs/core/search/client';
+  import { oramaCloudClient } from '@decentdocs/core/search/client/orama-cloud';
+  import { OramaCloud } from '@orama/core';
+
+  const orama = new OramaCloud({
+    projectId: process.env.NEXT_PUBLIC_ORAMA_PROJECT_ID,
+    apiKey: process.env.NEXT_PUBLIC_ORAMA_API_KEY,
+  });
+
+  const { search, setSearch, query } = useDocsSearch({
+    client: oramaCloudClient({
+      client: orama,
+      params: {
+        // optional search params
+      },
+    }),
+  });
+  ```
+
+- Use their search client directly.
+
+## Web Crawler
+
+1. Create a Crawler data source from dashboard, and configure it correctly with the "Documentation" preset.
+2. Copy the credentials from dashboard.
+
+### Search Client
+
+Same as REST API integration, but make sure to set `index` to `crawler`.
+
+```ts
+import { useDocsSearch } from '@decentdocs/core/search/client';
+import { oramaCloudClient } from '@decentdocs/core/search/client/orama-cloud';
+import { OramaCloud } from '@orama/core';
+
+const orama = new OramaCloud({
+  projectId: '<project id>',
+  apiKey: '<read only api key>',
+});
+
+const { search, setSearch, query } = useDocsSearch({
+  client: oramaCloudClient({
+    index: 'crawler',
+    client: orama,
+    params: {
+      // optional search params
+    },
+  }),
+});
+```
+
+It's same for Decent Docs UI.

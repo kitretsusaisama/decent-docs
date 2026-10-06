@@ -1,0 +1,85 @@
+{
+  "name": "@decentdocs/twoslash",
+  "version": "1.1.1",
+  "description": "Typescript Twoslash Integration for Decent Docs",
+  "keywords": [
+    "Docs",
+    "decent-docs"
+  ],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/twoslash"
+  },
+  "files": [
+    "dist",
+    "styles"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./styles/**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./twoslash.css": "./styles/twoslash.css",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js"
+    },
+    "./cache-fs": {
+      "types": "./dist/cache-fs.d.ts",
+      "import": "./dist/cache-fs.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch",
+    "lint": "oxlint .",
+    "types:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@types/hast": "^3.0.5",
+    "cn": "^0.4.0",
+    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-to-hast": "^13.2.1",
+    "typescript": "~7.0.2"
+  },
+  "devDependencies": {
+    "@decentdocs/core": "workspace:*",
+    "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "26.6.4",
+    "@types/react": "^19.3.0",
+    "shiki": "4.5.0",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0"
+  },
+  "peerDependencies": {
+    "@decentdocs/core": "workspace:^",
+    "@decentdocs/ui": "workspace:^",
+    "@types/react": "*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "shiki": "^4.4.3"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    }
+  }
+}

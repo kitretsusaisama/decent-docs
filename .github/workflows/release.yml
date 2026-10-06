@@ -1,0 +1,72 @@
+name: Release
+
+# Changesets flow:
+#  - push with pending changeset files -> opens/updates the Release PR
+#    (pnpm version-packages versions every package in the fixed group)
+#  - push without pending changesets (i.e. after the Release PR merges)
+#    -> pnpm release (changeset publish) publishes to npm with provenance.
+#
+# Publishing auth: NPM_TOKEN is the bootstrap credential for the first
+# publish (trusted publishing cannot be pre-configured for packages that do
+# not exist yet). Once the packages exist on npm, configure OIDC trusted
+# publishing per package (npmjs.com -> package -> Trusted publishing) and
+# delete the NPM_TOKEN secret. Provenance itself is always attached via
+# OIDC (id-token: write + NPM_CONFIG_PROVENANCE).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # changesets needs tags and full history to detect published versions
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build --filter=./packages/*
+
+      - name: Never publish a broken tarball
+        run: pnpm check:pack
+
+      - name: Create release PR or publish
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
+          commit: 'chore: release'
+          title: 'chore: release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # attach npm provenance (OIDC) to every published tarball
+          NPM_CONFIG_PROVENANCE: 'true'

@@ -1,0 +1,11 @@
+This is an Astro application generated with Create Decent Docs.
+
+Run development server:
+
+```bash
+npm run dev
+# or
+pnpm dev
+# or
+yarn dev
+```

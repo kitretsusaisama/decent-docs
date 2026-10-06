@@ -1,0 +1,108 @@
+---
+title: Algolia Search
+description: Integrate Algolia Search with Decent Docs
+---
+
+<Callout title="Notice">
+  If you're using Algolia's free tier, you have to [display their logo on your search
+  dialog](https://algolia.com/policies/free-services-terms).
+</Callout>
+
+## Setup
+
+Install dependencies:
+
+```package-install
+algoliasearch
+```
+
+### Sign up on Algolia
+
+Sign up and obtain the app id and API keys for your search, store them in `.env.local` (`VITE_` instead of `NEXT_PUBLIC_` outside Next.js):
+
+```dotenv
+NEXT_PUBLIC_ALGOLIA_APP_ID="app ID"
+NEXT_PUBLIC_ALGOLIA_SEARCH_KEY="search-only API key"
+ALGOLIA_WRITE_KEY="write API key"
+```
+
+### Sync Search Indexes
+
+Pre-render a `static.json` route to export the search indexes on build, and sync them to Algolia with a script after each build:
+
+<feature>search/algolia</feature>
+
+`sync()` updates the index settings and replaces all records. The `build` script syncs on every build, set the same variables on your deployment platform.
+
+### Search UI
+
+You can consider different options for implementing the UI:
+
+- Using [Decent Docs UI search dialog](/docs/search/algolia).
+- Build your own using the built-in search client hook:
+
+  ```ts twoslash
+  import { liteClient } from 'algoliasearch/lite';
+  import { useDocsSearch } from '@decentdocs/core/search/client';
+  import { algoliaClient } from '@decentdocs/core/search/client/algolia';
+
+  const algolia = liteClient('id', 'key');
+
+  const { search, setSearch, query } = useDocsSearch({
+    client: algoliaClient({
+      indexName: 'document',
+      client: algolia,
+    }),
+  });
+  ```
+
+- Use their official clients directly.
+
+## Advanced
+
+### Tag Filter
+
+To configure tag filtering, pass a `tag` to `toDocuments()` in the `static.json` route:
+
+```ts
+toDocuments(source, { tag: (page) => page.slugs[0] });
+```
+
+And update your search client:
+
+- **Decent Docs UI**: Enable [Tag Filter](/docs/search/algolia#tag-filter) on Search UI.
+- **Search Client**: You can add the tag filter like:
+
+  ```ts
+  import { useDocsSearch } from '@decentdocs/core/search/client';
+  import { algoliaClient } from '@decentdocs/core/search/client/algolia';
+
+  const { search, setSearch, query } = useDocsSearch({
+    client: algoliaClient({
+      tag: '<your tag value>',
+      // ...
+    }),
+  });
+  ```
+
+The `tag` field is an attribute for faceting. You can also use the filter `tag:value` on Algolia search clients.
+
+### Under the Hood
+
+The Algolia Integration automatically configures Algolia Search for document search.
+
+It creates a record for **each paragraph** in your document, it is also recommended by Algolia.
+
+Each record contains searchable attributes:
+
+| Attribute | Description           |
+| --------- | --------------------- |
+| `title`   | Page Title            |
+| `section` | Heading ID (nullable) |
+| `content` | Paragraph content     |
+
+The `section` field only exists in paragraphs under a heading. Headings and
+paragraphs are indexed as an individual record, grouped by their page ID.
+
+Notice that it expects the `url` property of a page to be unique, you shouldn't have two pages with the same
+url.

@@ -1,0 +1,65 @@
+---
+title: create-decent-docs
+description: The CLI to create new Decent Docs apps
+---
+
+## Usage
+
+```npm
+npx create-decent-docs@latest my-docs
+```
+
+It asks for the template and features to configure, you can also pass them as options.
+
+### Options
+
+| Option              | Description                                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `--template <name>` | The template to use, see [Templates](#templates).                                                         |
+| `--src`             | (Next.js only) Use the `src/` directory.                                                                  |
+| `--linter <name>`   | Configure a linter: `eslint` (Next.js only), `oxlint` or `biome`.                                         |
+| `--search <name>`   | Search solution: `orama` (default), `orama-cloud`, `algolia`, `meilisearch`, `typesense` or `mixedbread`. |
+| `--og-image <name>` | (Next.js only) OG image generation: `next-og` or `takumi`, other templates use Takumi.                    |
+| `--install`         | Install dependencies automatically.                                                                       |
+| `--no-git`          | Skip Git repository initialization.                                                                       |
+| `--pm <name>`       | Package manager: `npm`, `pnpm`, `yarn` or `bun`, detected from how the CLI is invoked.                    |
+| `-y, --yes`         | Skip prompts, use defaults for options not specified.                                                     |
+
+### Templates
+
+| Value                     | Description                                |
+| ------------------------- | ------------------------------------------ |
+| `+next+decent-mdx`        | Next.js (default)                          |
+| `+next+decent-mdx+static` | Next.js with static export                 |
+| `waku`                    | Waku                                       |
+| `react-router`            | React Router                               |
+| `tanstack-start`          | Tanstack Start                             |
+| `astro`                   | Astro with React islands (partial support) |
+
+### Non-interactive
+
+Pass `--yes` to skip prompts, useful for scripts, CI and AI agents:
+
+```npm
+npx create-decent-docs@latest my-docs --template +next+decent-mdx --install --yes
+```
+
+Options you didn't specify use their defaults: no linter, local search. It fails when the target directory already exists and is not empty.
+
+## Programmatic API
+
+Despite the classical CLI usage, you can also use it in scripts like:
+
+```npm
+npm install create-decent-docs
+```
+
+```ts
+import { create } from 'create-decent-docs';
+
+await create({
+  outputDir: 'my-app',
+  template: '+next+decent-mdx',
+  packageManager: 'pnpm',
+});
+```

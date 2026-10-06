@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # npm dependencies across the pnpm workspace (root lockfile)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      non-major:
+        update-types:
+          - minor
+          - patch
+
+  # keep action SHAs moving (workflows are SHA-pinned with a version comment)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns:
+          - '*'

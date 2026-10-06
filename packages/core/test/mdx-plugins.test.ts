@@ -1,0 +1,237 @@
+import { expect, test } from 'vitest';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { remark } from 'remark';
+import {
+  parseCodeBlockAttributes,
+  rehypeToc,
+  remarkDirectiveAdmonition,
+  remarkHeading,
+  remarkImage,
+  remarkMdxFiles,
+  remarkMdxMermaid,
+  remarkStructure,
+} from '@/mdx-plugins';
+import { fileURLToPath } from 'node:url';
+import remarkMdx from 'remark-mdx';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
+import type { RehypeTOCItemType } from '@/mdx-plugins/rehype-toc';
+import { createProcessor } from '@mdx-js/mdx';
+import { remarkSteps } from '@/mdx-plugins/remark-steps';
+import remarkDirective from 'remark-directive';
+import { placeholder, remarkLLMs } from '@/mdx-plugins/remark-llms';
+import { renderPlaceholder } from '@/mdx-plugins/remark-llms.runtime';
+
+const cwd = path.dirname(fileURLToPath(import.meta.url));
+
+test('Remark Heading', async () => {
+  const file = path.resolve(cwd, './fixtures/remark-heading.md');
+  const content = await fs.readFile(file);
+
+  const result = await remark().use(remarkHeading).process(content);
+
+  await expect(result.data.toc).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-heading.output.json'),
+  );
+});
+
+test('Remark Mdx Files', async () => {
+  const file = path.resolve(cwd, './fixtures/remark-mdx-files.mdx');
+  const content = await fs.readFile(file);
+
+  const result = await remark().use(remarkMdx).use(remarkMdxFiles).process({
+    path: file,
+    value: content,
+  });
+  await expect(String(result.value)).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-mdx-files.output.mdx'),
+  );
+});
+
+test('Remark Structure', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/remark-structure.mdx'));
+  const result = await remark()
+    .use(remarkGfm)
+    .use(remarkMdx)
+    .use(remarkHeading)
+    .use(remarkStructure)
+    .process(content);
+
+  await expect(JSON.stringify(result.data.structuredData, null, 2)).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-structure.output.json'),
+  );
+});
+
+test('Remark Admonition', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/remark-admonition.md'));
+  const processor = remark().use(remarkMdx).use(remarkDirective).use(remarkDirectiveAdmonition);
+  let tree = processor.parse(content);
+  tree = await processor.run(tree);
+
+  await expect(tree).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-admonition.output.json'),
+  );
+});
+
+test('Remark Steps', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/remark-steps.md'));
+  const processor = remark().use(remarkSteps).use(remarkMdx);
+  const result = await processor.process(content);
+
+  await expect(result.value).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-steps.output.md'),
+  );
+});
+
+test('Remark Image: With Path', async () => {
+  const file = path.resolve(cwd, './fixtures/remark-image.md');
+  const content = await fs.readFile(file);
+  const processor = remark().use(remarkImage, {
+    publicDir: path.resolve(cwd, './fixtures'),
+    external: false,
+  });
+
+  const result = await processor.run(processor.parse(content), {
+    path: file,
+  });
+
+  await expect(result).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-image.output.json'),
+  );
+});
+
+test('Remark Image: Without Import', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/remark-image.md'));
+  const processor = remark().use(remarkImage, {
+    publicDir: path.resolve(cwd, './fixtures'),
+    useImport: false,
+    external: false,
+  });
+
+  const result = await processor.run(processor.parse(content));
+  await expect(result).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-image-without-import.output.json'),
+  );
+});
+
+test('Remark Image: `publicDir` with URL', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/remark-image-public-dir.md'));
+  const processor = remark().use(remarkImage, {
+    publicDir: 'https://github.com/kitretsusaisama/decent-docs',
+    useImport: false,
+    external: false,
+  });
+
+  const result = await processor.run(processor.parse(content));
+  await expect(result).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-image-public-dir.output.json'),
+  );
+});
+
+test('converts mermaid codeblock to MDX Mermaid component', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/remark-mdx-mermaid.md'));
+  const result = await remark().use(remarkMdxMermaid).use(remarkMdx).process(content);
+
+  await expect(result.value).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/remark-mdx-mermaid.output.mdx'),
+  );
+});
+
+test('Rehype Toc', async () => {
+  const content = await fs.readFile(path.resolve(cwd, './fixtures/rehype-toc.md'));
+
+  const processor = createProcessor({
+    remarkPlugins: [remarkHeading],
+    rehypePlugins: [rehypeToc],
+  });
+  const result = await processor.process({ value: content });
+
+  await expect(result.value).toMatchFileSnapshot(
+    path.resolve(cwd, './fixtures/rehype-toc.output.js'),
+  );
+});
+
+test('Rehype Toc: step numbers survive rehype-raw', async () => {
+  // `remarkSteps` sets `data-fd-step` as a number. `rehype-raw` re-parses the
+  // tree from HTML, which turns it into the canonical `dataFdStep` string.
+  const content = '### 1. Install\n\n<span>inline html</span>\n\n### 2. Configure\n\ndone';
+  const steps = async (withRaw: boolean) => {
+    let toc: RehypeTOCItemType[] | undefined;
+    const processor = remark()
+      .use(remarkHeading)
+      .use(remarkSteps)
+      .use(remarkRehype, { allowDangerousHtml: true })
+      .use(withRaw ? [rehypeRaw] : [])
+      .use(rehypeToc, { exportToc: { as: 'data' } })
+      .use(() => (_tree, file) => {
+        toc = file.data.rehypeToc;
+      });
+    await processor.run(processor.parse(content));
+    return toc?.map((item) => item._step);
+  };
+
+  expect(await steps(false)).toEqual([1, 2]);
+  expect(await steps(true)).toEqual([1, 2]);
+});
+
+test('parse meta strings', () => {
+  expect(
+    parseCodeBlockAttributes(
+      `title="hello 'world'" tab='hello "world"' twoslash funny:invalid="" 'invalid'name="test"`,
+    ),
+  ).toMatchInlineSnapshot(`
+    {
+      "attributes": {
+        "funny": null,
+        "tab": "hello "world"",
+        "title": "hello 'world'",
+        "twoslash": null,
+      },
+      "rest": "   :invalid="" 'invalid'name="test"",
+    }
+  `);
+});
+
+test('Remark LLMs: filterElement', async () => {
+  const result = await remark()
+    .use(remarkMdx)
+    .use(remarkLLMs, {
+      _data: true,
+      filterElement(node) {
+        if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') return true;
+        return node.name !== 'Callout';
+      },
+    })
+    .process('<Callout type="warn">dropped</Callout>\n\ntext after\n');
+
+  expect(result.data.markdown).not.toContain('Callout');
+  expect(result.data.markdown).not.toContain('dropped');
+  expect(result.data.markdown).toContain('text after');
+});
+
+test('Remark LLMs: placeholder', async () => {
+  const file = path.resolve(cwd, './fixtures/remark-llms.mdx');
+  const content = await fs.readFile(file);
+  const result = await remark()
+    .use(remarkMdx)
+    .use(remarkLLMs, {
+      _data: true,
+      stringify(node, parent, state, info) {
+        if (node.type === 'mdxJsxFlowElement' && node.name === 'MyPage')
+          return placeholder(node, parent, state, info);
+      },
+    })
+    .process(content);
+
+  const markdown = result.data.markdown as string;
+  const rendered = await renderPlaceholder(markdown, {
+    async MyPage({ attributes, children }) {
+      return `title: ${attributes.title}, children: ${children}`;
+    },
+  });
+  await expect(
+    `\`\`\`md\n${markdown}\n\`\`\`\n\n\`\`\`md\n${rendered}\n\`\`\``,
+  ).toMatchFileSnapshot(path.resolve(cwd, './fixtures/remark-llms.output.md'));
+});

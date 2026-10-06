@@ -1,0 +1,68 @@
+{
+  "name": "@decentdocs/language",
+  "version": "1.1.1",
+  "description": "Common language packs for Decent Docs",
+  "keywords": [
+    "decent-docs",
+    "documentation"
+  ],
+  "homepage": "https://github.com/kitretsusaisama/decent-docs#readme",
+  "bugs": {
+    "url": "https://github.com/kitretsusaisama/decent-docs/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitretsusaisama/decent-docs.git",
+    "directory": "packages/language"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./zh-cn": "./dist/zh-cn.js",
+    "./zh-tw": "./dist/zh-tw.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "rimraf dist",
+    "dev": "tsdown --watch --clean false",
+    "lint": "oxlint .",
+    "types:check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@decentdocs/core": "workspace:*",
+    "@decentdocs/openapi": "workspace:*",
+    "@decentdocs/story": "workspace:*",
+    "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
+    "tsconfig": "workspace:*",
+    "tsdown": "0.23.0",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "@decentdocs/core": "*",
+    "@decentdocs/openapi": "*",
+    "@decentdocs/story": "*",
+    "@decentdocs/ui": "*"
+  },
+  "peerDependenciesMeta": {
+    "@decentdocs/story": {
+      "optional": true
+    },
+    "@decentdocs/core": {
+      "optional": true
+    },
+    "@decentdocs/openapi": {
+      "optional": true
+    },
+    "@decentdocs/ui": {
+      "optional": true
+    }
+  }
+}
