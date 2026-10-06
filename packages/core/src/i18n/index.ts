@@ -110,7 +110,7 @@ export interface SingularTranslationsAPI<Keys extends string = string> {
 }
 
 const isProto = (key: string) => key === '__proto__' || key === 'constructor' || key === 'prototype';
-const safeAssign = (target: object, source: object) => {
+const safeAssign = (target: Record<string, unknown>, source: Record<string, unknown>) => {
   for (const key of Object.keys(source)) {
     if (!isProto(key)) target[key] = source[key];
   }

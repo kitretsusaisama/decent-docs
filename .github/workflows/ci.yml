@@ -131,7 +131,7 @@ jobs:
         run: pnpm test:coverage
 
       - name: Upload coverage
-        uses: actions/upload-artifact@65c458c4d6d60e3e221c8e6b1a9a4e2d3e7f1a2b # v4.3.0
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage/

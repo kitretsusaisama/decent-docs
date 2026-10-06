@@ -455,20 +455,23 @@ export function useAuthFields(
       },
       [fields],
     ),
-    init: useCallback(async () => {
-      for (const field of fields) {
-        const stored = await secureLocalStorage.getItem(field.storageKey);
+    init: useCallback(() => {
+      // Async initialization - don't await in the returned cleanup
+      void (async () => {
+        for (const field of fields) {
+          const stored = await secureLocalStorage.getItem(field.storageKey);
 
-        if (stored) {
-          const parsed: unknown = JSON.parse(stored);
-          if (typeof parsed === typeof field.defaultValue) {
-            engine.init(field.fieldName, parsed);
-            continue;
+          if (stored) {
+            const parsed: unknown = JSON.parse(stored);
+            if (typeof parsed === typeof field.defaultValue) {
+              engine.init(field.fieldName, parsed);
+              continue;
+            }
           }
-        }
 
-        engine.init(field.fieldName, field.defaultValue);
-      }
+          engine.init(field.fieldName, field.defaultValue);
+        }
+      })();
 
       return () => {
         for (const field of fields) engine.delete(field.fieldName);

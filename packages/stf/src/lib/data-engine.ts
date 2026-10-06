@@ -159,8 +159,9 @@ export class DataEngine {
       if (i === field.length - 1) {
         if (value !== undefined) return value;
         const isProto = key === '__proto__' || key === 'constructor' || key === 'prototype';
-        // @ts-expect-error -- allow access
-        const out = (parent[key] = isProto ? {} : getDefaultValue(defaultValue));
+        const newVal = isProto ? {} : getDefaultValue(defaultValue);
+        // @ts-expect-error -- allow dynamic property access
+        const out = (parent[key] = newVal);
 
         fieldsToInit.push(field);
         for (const initField of fieldsToInit) this.listeners.onInit(initField, ctx);
@@ -171,13 +172,14 @@ export class DataEngine {
         parentKey.push(key);
       } else {
         const nextKey = field[i + 1];
-        // @ts-expect-error -- allow access
         const isProto = key === '__proto__' || key === 'constructor' || key === 'prototype';
-        parent = parent[key] = isProto
+        const newParent = isProto
           ? {}
           : typeof nextKey === 'number'
             ? new Array(nextKey + 1)
             : {};
+        // @ts-expect-error -- allow dynamic property access
+        parent = parent[key] = newParent;
 
         if (value === undefined) {
           initStart ??= [...parentKey];
