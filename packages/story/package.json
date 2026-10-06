@@ -57,7 +57,7 @@
     "@fuma-translate/react": "^1.0.2",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
-    "lucide-react": "^1.50.0",
+    "lucide-react": "^1.51.0",
     "typescript": "~7.0.2"
   },
   "devDependencies": {

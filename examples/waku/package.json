@@ -13,7 +13,7 @@
     "@decentdocs/core": "workspace:*",
     "@decentdocs/mdx": "workspace:*",
     "cn": "^0.4.0",
-    "lucide-react": "^1.50.0",
+    "lucide-react": "^1.51.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-server-dom-webpack": "^19.3.0",
