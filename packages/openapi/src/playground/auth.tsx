@@ -14,6 +14,7 @@ import {
 import { type DataEngine, type FieldKey, useListener } from '@decentdocs/stf';
 import { arrayStartsWith, objectGet, objectSet } from '@decentdocs/stf/lib/utils';
 import type { OAuth2SecurityScheme, OperationObject, SecuritySchemeObject } from '@/types';
+import { secureSessionStorage, secureLocalStorage } from './crypto';
 
 /** an `implicit` or `authorizationCode` flow that left the page, in `sessionStorage` */
 interface PendingFlow {
@@ -93,7 +94,7 @@ export async function requestOAuthToken(
       token_url: 'tokenUrl' in flow ? new URL(flow.tokenUrl!, serverUrl).href : undefined,
       origin,
     };
-    sessionStorage.setItem(pendingFlowKey, JSON.stringify(pending));
+    await secureSessionStorage.setItem(pendingFlowKey, JSON.stringify(pending));
     // where `createOAuthHandler()` sends users back to
     if (redirectUrl)
       document.cookie = `decent-openapi-oauth=${encodeURIComponent(window.location.pathname)}; path=/; max-age=600; SameSite=Lax${
@@ -236,31 +237,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(pendingFlowKey);
-    if (!stored) return;
+    (async () => {
+      const stored = await secureSessionStorage.getItem(pendingFlowKey);
+      if (!stored) return;
 
-    const flow = JSON.parse(stored) as PendingFlow;
-    const query = new URLSearchParams(window.location.search);
-    const hash = new URLSearchParams(window.location.hash.slice(1));
-    const code = query.get('code');
-    const token = hash.get('access_token');
+      const flow = JSON.parse(stored) as PendingFlow;
+      const query = new URLSearchParams(window.location.search);
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      const code = query.get('code');
+      const token = hash.get('access_token');
 
-    // only accept the flow started in this tab
-    if (code && query.get('state') === flow.state) {
-      authCodeQuery.start(code, flow);
-    } else if (token && hash.get('state') === flow.state) {
-      save(flow.scheme, {
-        type: 'implicit',
-        client_id: flow.client_id,
-        token: `${hash.get('token_type') ?? 'Bearer'} ${token}`,
-      });
-    } else {
-      return;
-    }
+      // only accept the flow started in this tab
+      if (code && query.get('state') === flow.state) {
+        authCodeQuery.start(code, flow);
+      } else if (token && hash.get('state') === flow.state) {
+        save(flow.scheme, {
+          type: 'implicit',
+          client_id: flow.client_id,
+          token: `${hash.get('token_type') ?? 'Bearer'} ${token}`,
+        });
+      } else {
+        return;
+      }
 
-    setOrigin(flow.origin);
-    sessionStorage.removeItem(pendingFlowKey);
-    window.history.replaceState(null, '', window.location.pathname);
+      setOrigin(flow.origin);
+      secureSessionStorage.removeItem(pendingFlowKey);
+      window.history.replaceState(null, '', window.location.pathname);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- first page load only
   }, []);
 
@@ -408,17 +411,17 @@ export function useAuthFields(
 
   useListener({
     stf: engine,
-    onUpdate(key) {
+    async onUpdate(key) {
       for (const field of fields) {
         if (!arrayStartsWith(field.fieldName, key)) continue;
         const value = engine.get(field.fieldName);
 
-        if (value != null) localStorage.setItem(field.storageKey, JSON.stringify(value));
+        if (value != null) await secureLocalStorage.setItem(field.storageKey, JSON.stringify(value));
       }
     },
   });
 
-  const onToken = useEffectEvent((schemeId: string, token: string) => {
+  const onToken = useEffectEvent(async (schemeId: string, token: string) => {
     const field = fields.find((field) => field.schemeId === schemeId);
     if (field) {
       // update current value
@@ -429,7 +432,7 @@ export function useAuthFields(
     const idx = requirements.findIndex((req) => req.some((item) => item.id === schemeId));
     if (idx !== -1) {
       // persisted value
-      localStorage.setItem(`${storageKeyPrefix}auth-${schemeId}`, JSON.stringify(token));
+      await secureLocalStorage.setItem(`${storageKeyPrefix}auth-${schemeId}`, JSON.stringify(token));
       select(idx);
     }
   });
@@ -454,9 +457,9 @@ export function useAuthFields(
       },
       [fields],
     ),
-    init: useCallback(() => {
+    init: useCallback(async () => {
       for (const field of fields) {
-        const stored = localStorage.getItem(field.storageKey);
+        const stored = await secureLocalStorage.getItem(field.storageKey);
 
         if (stored) {
           const parsed: unknown = JSON.parse(stored);
