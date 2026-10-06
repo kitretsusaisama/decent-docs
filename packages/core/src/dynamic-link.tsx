@@ -21,7 +21,7 @@ export function DynamicLink({ href, ref, ...props }: DynamicLinkProps) {
 }
 
 export function updateHref(href: string, params: Record<string, string | string[]>) {
-  return href.replace(/\[(.*)]\/?/, (match, key) => {
+  return href.replace(/\[([^\]]*)]\/?/, (match, key) => {
     const hasEndingSlash = match[match.length - 1] === '/';
     const value = key in params ? params[key] : undefined;
     if (!value) return '';

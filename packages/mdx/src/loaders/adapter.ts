@@ -187,7 +187,7 @@ export function toBun(test: RegExp | undefined, loader: Loader) {
 
   return (build: Bun.PluginBuilder) => {
     // avoid using async here, because it will cause dynamic require() to fail
-    build.onLoad({ filter: test ?? /.+/ }, (args) => {
+    build.onLoad({ filter: test ?? /./ }, (args) => {
       const [filePath, query = ''] = args.path.split('?', 2);
       const input: LoaderInput = {
         async getSource() {

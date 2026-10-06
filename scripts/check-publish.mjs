@@ -131,7 +131,7 @@ for (const { dir, pkg } of packages) {
   // --- real tarball audit ---------------------------------------------------
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'decent-pack-'));
   try {
-    run('pnpm', ['pack', '--pack-destination', tmp], { cwd: dir, shell: true });
+    run('pnpm', ['pack', '--pack-destination', tmp], { cwd: dir });
     const tarballs = fs.readdirSync(tmp).filter((f) => f.endsWith('.tgz'));
     if (tarballs.length !== 1) {
       fail(name, `expected 1 tarball, found ${tarballs.length}`);

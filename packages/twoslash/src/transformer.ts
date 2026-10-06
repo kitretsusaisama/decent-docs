@@ -140,8 +140,8 @@ export interface TransformerTwoslashOptions {
 }
 
 const RE_TWOSLASH = /\btwoslash\b/;
-const RE_INCLUDE_MARKER = /\/\/ @include: (.*)$/gm;
-const RE_INCLUDE_META = /include\s+([\w-]+)\b.*/;
+const RE_INCLUDE_MARKER = /\/\/ @include: ([^\n]*)$/gm;
+const RE_INCLUDE_META = /include\s+([\w-]+)\b/;
 
 /**
  * Apply Twoslash to code blocks with the `twoslash` meta string.

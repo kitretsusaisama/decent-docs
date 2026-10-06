@@ -97,9 +97,7 @@ export async function requestOAuthToken(
     await secureSessionStorage.setItem(pendingFlowKey, JSON.stringify(pending));
     // where `createOAuthHandler()` sends users back to
     if (redirectUrl)
-      document.cookie = `decent-openapi-oauth=${encodeURIComponent(window.location.pathname)}; path=/; max-age=600; SameSite=Lax${
-        window.location.protocol === 'https:' ? '; Secure' : ''
-      }`;
+      document.cookie = `decent-openapi-oauth=${encodeURIComponent(window.location.pathname)}; path=/; max-age=600; SameSite=Lax; Secure`;
 
     // keep the params of `authorizationUrl`, like `audience`
     const url = new URL(flow.authorizationUrl!, serverUrl);

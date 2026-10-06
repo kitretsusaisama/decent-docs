@@ -109,6 +109,13 @@ export interface SingularTranslationsAPI<Keys extends string = string> {
   preset: (preset: TranslationPreset<Keys>) => SingularTranslationsAPI<Keys>;
 }
 
+const isProto = (key: string) => key === '__proto__' || key === 'constructor' || key === 'prototype';
+const safeAssign = (target: object, source: object) => {
+  for (const key of Object.keys(source)) {
+    if (!isProto(key)) target[key] = source[key];
+  }
+};
+
 function pickTranslations(full: Record<string, string>, keys: Set<string>): Record<string, string> {
   const result: Record<string, string> = {};
   for (const k in full) {
@@ -150,13 +157,13 @@ export function defineI18n<const Languages extends string>(
           const overrides = args.length === 2 ? args[1] : args[0];
 
           for (const [lang, values] of Object.entries(overrides)) {
-            Object.assign((translations[lang] ??= {}), values);
+            safeAssign((translations[lang] ??= {}), values);
           }
 
           return this as never;
         },
         preset(lang, preset) {
-          Object.assign(translations[lang], preset.value);
+          safeAssign(translations[lang], preset.value);
           return this as never;
         },
       } as TranslationsAPI<string> as never;
@@ -179,11 +186,11 @@ export function defineTranslations(): SingularTranslationsAPI<never> {
       return this as never;
     },
     add(...args: [string, Record<string, string>] | [Record<string, string>]) {
-      Object.assign(translations, args.length === 2 ? args[1] : args[0]);
+      safeAssign(translations, args.length === 2 ? args[1] : args[0]);
       return this as never;
     },
     preset(preset) {
-      Object.assign(translations, preset.value);
+      safeAssign(translations, preset.value);
       return this as never;
     },
   } as SingularTranslationsAPI<never>;

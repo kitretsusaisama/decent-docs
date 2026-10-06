@@ -158,8 +158,9 @@ export class DataEngine {
 
       if (i === field.length - 1) {
         if (value !== undefined) return value;
+        const isProto = key === '__proto__' || key === 'constructor' || key === 'prototype';
         // @ts-expect-error -- allow access
-        const out = (parent[key] = getDefaultValue(defaultValue));
+        const out = (parent[key] = isProto ? {} : getDefaultValue(defaultValue));
 
         fieldsToInit.push(field);
         for (const initField of fieldsToInit) this.listeners.onInit(initField, ctx);
@@ -171,7 +172,12 @@ export class DataEngine {
       } else {
         const nextKey = field[i + 1];
         // @ts-expect-error -- allow access
-        parent = parent[key] = typeof nextKey === 'number' ? new Array(nextKey + 1) : {};
+        const isProto = key === '__proto__' || key === 'constructor' || key === 'prototype';
+        parent = parent[key] = isProto
+          ? {}
+          : typeof nextKey === 'number'
+            ? new Array(nextKey + 1)
+            : {};
 
         if (value === undefined) {
           initStart ??= [...parentKey];
