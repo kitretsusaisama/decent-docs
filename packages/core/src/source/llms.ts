@@ -178,8 +178,9 @@ export function llms<C extends LoaderConfig = LoaderConfig>(
 }
 
 function formatMarkdownLink(title: string, url: string): string {
-  const escapedTitle = title.replace(/([[\]])/g, '\\$1');
-  const escapedUrl = url.replace(/([()])/g, '\\$1');
+  // Escape backslashes first, then markdown meta-characters
+  const escapedTitle = title.replace(/\\/g, '\\\\').replace(/([[\]])/g, '\\$1');
+  const escapedUrl = url.replace(/\\/g, '\\\\').replace(/([()])/g, '\\$1');
 
   return `[${escapedTitle}](${escapedUrl})`;
 }
