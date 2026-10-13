@@ -170,7 +170,7 @@
     "tsdown": "0.23.0",
     "typescript": "^7.0.2",
     "typesense": "^3.1.0",
-    "waku": "1.0.0-rc.2",
+    "waku": "1.0.0-rc.3",
     "zod": "4.6.5"
   },
   "peerDependencies": {
