@@ -52,10 +52,10 @@
     "types:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.8.0",
+    "@base-ui/react": "^1.9.0",
     "@types/hast": "^3.0.5",
     "cn": "^0.4.0",
-    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-from-markdown": "^2.1.0",
     "mdast-util-to-hast": "^13.2.1",
     "typescript": "~7.0.2"
   },
@@ -63,7 +63,7 @@
     "@decentdocs/core": "workspace:*",
     "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
     "@types/mdast": "^4.0.4",
-    "@types/node": "26.6.4",
+    "@types/node": "26.6.5",
     "@types/react": "^19.3.0",
     "shiki": "4.5.0",
     "tsconfig": "workspace:*",

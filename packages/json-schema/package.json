@@ -40,11 +40,11 @@
   },
   "dependencies": {
     "@fuma-translate/react": "^1.0.2",
-    "@scalar/json-magic": "^0.15.4"
+    "@scalar/json-magic": "^0.15.6"
   },
   "devDependencies": {
-    "@fastify/deepmerge": "^3.2.1",
-    "@types/node": "26.6.4",
+    "@fastify/deepmerge": "^3.2.2",
+    "@types/node": "26.6.5",
     "@types/react": "^19.3.0",
     "json-schema-typed": "^8.0.2",
     "react": "^19.3.0",

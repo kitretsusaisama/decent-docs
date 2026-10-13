@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@decentdocs/core": "workspace:*",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "fuma-content": "^1.4.0",
     "react-dom": "^19.3.0",
     "tsconfig": "workspace:*",
