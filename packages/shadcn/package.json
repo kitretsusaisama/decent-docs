@@ -44,14 +44,14 @@
   "devDependencies": {
     "@decentdocs/core": "workspace:*",
     "@decentdocs/ui": "workspace:@decentdocs/base-ui@*",
-    "@types/node": "26.6.4",
+    "@types/node": "26.6.5",
     "@types/react": "^19.3.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "shadcn": "^4.21.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "shadcn": "^4.21.5",
     "tailwindcss": "^4.3.3",
     "tsconfig": "workspace:*",
-    "tsdown": "0.23.0"
+    "tsdown": "0.23.1"
   },
   "peerDependencies": {
     "@decentdocs/core": "workspace:^",

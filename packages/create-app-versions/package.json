@@ -10,11 +10,11 @@
     "@decentdocs/ui": "workspace:*",
     "@mixedbread/sdk": "^0.78.0",
     "@orama/core": "^1.2.19",
-    "algoliasearch": "^5.59.0",
+    "algoliasearch": "^5.60.0",
     "meilisearch": "^0.62.0",
-    "oxlint": "^1.86.0",
-    "react": "^19.3.0",
-    "takumi-js": "^2.14.0",
-    "typesense": "^3.1.0"
+    "oxlint": "^1.88.0",
+    "react": "^19.3.1",
+    "takumi-js": "^2.16.2",
+    "typesense": "^3.1.1"
   }
 }
