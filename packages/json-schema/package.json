@@ -40,17 +40,17 @@
   },
   "dependencies": {
     "@fuma-translate/react": "^1.0.2",
-    "@scalar/json-magic": "^0.15.4"
+    "@scalar/json-magic": "^0.16.1"
   },
   "devDependencies": {
-    "@fastify/deepmerge": "^3.2.1",
-    "@types/node": "26.6.4",
+    "@fastify/deepmerge": "^3.2.4",
+    "@types/node": "26.6.5",
     "@types/react": "^19.3.0",
     "json-schema-typed": "^8.0.2",
-    "react": "^19.3.0",
+    "react": "^19.3.1",
     "tsconfig": "workspace:*",
-    "tsdown": "0.23.0",
-    "vitest": "^5.0.3"
+    "tsdown": "0.23.1",
+    "vitest": "^5.0.5"
   },
   "peerDependencies": {
     "json-schema-typed": "*",
