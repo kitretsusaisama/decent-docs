@@ -4,17 +4,17 @@
   "private": true,
   "description": "Used to track dependency versions in create-decent-docs",
   "dependencies": {
-    "@biomejs/biome": "^2.5.15",
+    "@biomejs/biome": "^2.6.2",
     "@decentdocs/core": "workspace:*",
     "@decentdocs/mdx": "workspace:*",
     "@decentdocs/ui": "workspace:*",
     "@mixedbread/sdk": "^0.78.0",
     "@orama/core": "^1.2.19",
-    "algoliasearch": "^5.59.0",
+    "algoliasearch": "^5.60.0",
     "meilisearch": "^0.62.0",
-    "oxlint": "^1.86.0",
-    "react": "^19.3.0",
-    "takumi-js": "^2.14.0",
-    "typesense": "^3.1.0"
+    "oxlint": "^1.89.0",
+    "react": "^19.3.1",
+    "takumi-js": "^2.17.1",
+    "typesense": "^3.2.0"
   }
 }
